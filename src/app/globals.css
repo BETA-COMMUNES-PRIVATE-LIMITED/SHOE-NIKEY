@@ -1,26 +1,184 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Theme Colors — exact from style guide */
+  --bg-primary: #0B0B0B;
+  --bg-card: #111111;
+  --bg-surface: #1A1A1A;
+  --bg-input: #111111;
+  --border-color: #2A2A2A;
+
+  --text-primary: #F5F5F5;
+  --text-muted: #BABABA;
+
+  --accent-lime: #A6FF00;
+  --accent-red: #FF3B30;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html, body {
+  background-color: #0B0B0B;
+  color: var(--text-primary);
+  font-family: var(--font-inter, sans-serif);
+  min-height: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Extra small breakpoint */
+@media (min-width: 400px) {
+  .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Safe area for mobile notch */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-space-grotesk, sans-serif);
+}
+
+/* Hide scrollbar for category chips */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ========== CARD ANIMATIONS ========== */
+
+/* Card hover effect */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--accent-lime);
+  box-shadow: 0 20px 40px rgba(166, 255, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Shoe image hover */
+.shoe-img {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.card-hover:hover .shoe-img {
+  transform: scale(1.12) rotate(-3deg);
+}
+
+/* Golden star */
+.star-icon {
+  color: #FFD700;
+  font-size: 14px;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
+  transition: all 0.3s ease;
+}
+.card-hover:hover .star-icon {
+  transform: scale(1.3) rotate(15deg);
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}
+
+/* Heart button animation */
+.heart-btn {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.heart-btn:hover {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.6));
+}
+.heart-btn:active {
+  transform: scale(0.9);
+}
+
+/* Badge bounce animation for NEW */
+.badge-bounce {
+  animation: badgeBounce 2s ease-in-out infinite;
+}
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Badge pulse for Coming Soon */
+.badge-pulse {
+  animation: badgePulse 1.5s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); }
+  50% { opacity: 0.9; box-shadow: 0 0 0 8px rgba(255, 59, 48, 0); }
+}
+
+/* Card entrance animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+.card-hover {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+.card-hover:nth-child(1) { animation-delay: 0.05s; }
+.card-hover:nth-child(2) { animation-delay: 0.1s; }
+.card-hover:nth-child(3) { animation-delay: 0.15s; }
+.card-hover:nth-child(4) { animation-delay: 0.2s; }
+.card-hover:nth-child(5) { animation-delay: 0.25s; }
+.card-hover:nth-child(6) { animation-delay: 0.3s; }
+.card-hover:nth-child(7) { animation-delay: 0.35s; }
+.card-hover:nth-child(8) { animation-delay: 0.4s; }
+.card-hover:nth-child(9) { animation-delay: 0.45s; }
+.card-hover:nth-child(10) { animation-delay: 0.5s; }
+.card-hover:nth-child(11) { animation-delay: 0.55s; }
+.card-hover:nth-child(12) { animation-delay: 0.6s; }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Dropdown animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-dropdown {
+  animation: dropdownFade 0.2s ease-out forwards;
+}
+
+/* Slide up animation for mobile bottom sheet */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slideUp {
+  animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Slide in from right for MiniCart */
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slideIn {
+  animation: slideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Touch-friendly tap targets */
+button, a, select, input {
+  touch-action: manipulation;
 }
