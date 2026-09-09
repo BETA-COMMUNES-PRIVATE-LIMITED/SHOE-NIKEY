@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const slides = [
   {
@@ -142,18 +143,22 @@ const Hero = () => {
           </div>
 
           <div className="flex items-center gap-4 mt-4">
-            <button
-              className="px-6 py-3 rounded-full text-xs font-bold text-black uppercase tracking-wider hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: 'var(--accent-lime)' }}
-            >
-              SHOP NOW
-            </button>
-            <button
-              className="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-colors"
-              style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-            >
-              EXPLORE
-            </button>
+            <Link href="/collections">
+              <button
+                className="px-6 py-3 rounded-full text-xs font-bold text-black uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer"
+                style={{ backgroundColor: 'var(--accent-lime)' }}
+              >
+                SHOP NOW
+              </button>
+            </Link>
+            <Link href="/men">
+              <button
+                className="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-colors cursor-pointer"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+              >
+                EXPLORE
+              </button>
+            </Link>
           </div>
         </div>
 

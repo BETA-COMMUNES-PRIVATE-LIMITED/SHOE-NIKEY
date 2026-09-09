@@ -116,19 +116,19 @@ export default function WishlistPage() {
                 }}
               >
                 {/* Image */}
-                <Link href={`/${item.section}/${item.id}`} className="block relative">
+                <Link href={`/${item.section}/${item.id}`} className="block relative group">
                   <div className="relative w-full aspect-square" style={{ backgroundColor: 'var(--bg-surface)' }}>
                     <Image src={item.image} alt={item.name} fill className="object-contain p-6" />
 
                     {/* Remove button */}
                     <button
                       onClick={(e) => { e.preventDefault(); handleRemove(item.id, item.section); }}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 hover:bg-red-500/20"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)' }}
+                      className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 opacity-0 group-hover:opacity-100 hover:bg-black/60"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
                       aria-label="Remove from wishlist"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: '#ef4444' }}>
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: '#fff' }}>
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
 

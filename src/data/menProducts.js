@@ -94,8 +94,8 @@ const productsData = [
     colorName: 'Black',
     colorHex: '#1A1A1A',
     colors: [
-      { name: 'Black', hex: '#1A1A1A', images: ['/images/p3-1.png', '/images/p3-2.png', '/images/p3-3.png', '/images/p3-4.png', '/images/p3-5.png'] },
-      { name: 'Brown', hex: '#8B4513', images: ['/images/p4-1.png', '/images/p4-2.png', '/images/p4-3.png', '/images/p4-4.png', '/images/p4-5.png'] },
+      { name: 'Black', hex: '#1A1A1A', images: ['/images/p4-1.png', '/images/p4-2.png', '/images/p4-3.png', '/images/p4-4.png', '/images/p4-5.png'] },
+      { name: 'Brown', hex: '#8B4513', images: ['/images/p3-1.png', '/images/p3-2.png', '/images/p3-3.png', '/images/p3-4.png', '/images/p3-5.png'] },
     ],
   },
   {

@@ -182,3 +182,11 @@ h1, h2, h3, h4, h5, h6 {
 button, a, select, input {
   touch-action: manipulation;
 }
+
+/* All interactive elements get pointer cursor */
+button, a, [role="button"], label[for], select, input[type="checkbox"], input[type="radio"] {
+  cursor: pointer !important;
+}
+button:disabled {
+  cursor: not-allowed !important;
+}

@@ -26,13 +26,46 @@ const menuItems = [
     ),
   },
   {
-    label: 'Products',
+    label: 'All Products',
     href: '/admin/products',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
       </svg>
     ),
+  },
+  {
+    label: 'Men',
+    href: '/admin/products/men',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <circle cx="10" cy="8" r="4" /><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      </svg>
+    ),
+    badge: 'M',
+    badgeColor: '#60a5fa',
+  },
+  {
+    label: 'Women',
+    href: '/admin/products/women',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4" /><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      </svg>
+    ),
+    badge: 'W',
+    badgeColor: '#f472b6',
+  },
+  {
+    label: 'Kids',
+    href: '/admin/products/kids',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4" /><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      </svg>
+    ),
+    badge: 'K',
+    badgeColor: '#a855f7',
   },
 ];
 
@@ -97,7 +130,7 @@ export default function AdminLayout({ children }) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto scrollbar-hide">
           {menuItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -113,6 +146,14 @@ export default function AdminLayout({ children }) {
               >
                 {item.icon}
                 {item.label}
+                {item.badge && (
+                  <span
+                    className="ml-auto text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${item.badgeColor}20`, color: item.badgeColor }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
