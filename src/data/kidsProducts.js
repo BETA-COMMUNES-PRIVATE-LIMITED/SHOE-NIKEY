@@ -278,7 +278,6 @@ const productsData = [
       },
     ],
   },
-
   {
     id: 13,
     name: 'Nike Star',
