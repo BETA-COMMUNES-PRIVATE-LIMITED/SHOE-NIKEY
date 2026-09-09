@@ -120,11 +120,11 @@ export default function WishlistPage() {
                   <div className="relative w-full aspect-square" style={{ backgroundColor: 'var(--bg-surface)' }}>
                     <Image src={item.image} alt={item.name} fill className="object-contain p-6" />
 
-                    {/* Remove button */}
+                    {/* Remove button - always visible */}
                     <button
                       onClick={(e) => { e.preventDefault(); handleRemove(item.id, item.section); }}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 opacity-0 group-hover:opacity-100 hover:bg-black/60"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
+                      className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 hover:bg-black/60"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
                       aria-label="Remove from wishlist"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: '#fff' }}>
