@@ -5,7 +5,7 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Default ignores of eslint-config-next:git commit -m "Updated shoe nike project"
     ".next/**",
     "out/**",
     "build/**",
