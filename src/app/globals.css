@@ -48,6 +48,31 @@ h1, h2, h3, h4, h5, h6 {
   display: none;
 }
 
+/* ========== GLOBAL SCROLLBAR (thin, dark, no arrow buttons) ========== */
+/* Applies everywhere (modals, admin panels, storefront) — elements with
+   .scrollbar-hide still hide it completely. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* ========== CARD ANIMATIONS ========== */
 
 /* Card hover effect */
@@ -170,6 +195,30 @@ h1, h2, h3, h4, h5, h6 {
   animation: slideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+/* Fade in for full-screen overlays (photo viewer) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Zoom in for photo viewer image */
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-zoomIn {
+  animation: zoomIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
 /* Line clamp utility */
 .line-clamp-1 {
   display: -webkit-box;
@@ -181,6 +230,25 @@ h1, h2, h3, h4, h5, h6 {
 /* Touch-friendly tap targets */
 button, a, select, input {
   touch-action: manipulation;
+}
+
+/* Keep inputs dark even when browser autofills them (Chrome turns them white) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-surface) inset;
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--text-primary);
+  border-radius: 12px;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Premium focus ring for admin panel inputs */
+.verre-admin input:focus,
+.verre-admin textarea:focus,
+.verre-admin select:focus {
+  border-color: var(--accent-lime) !important;
+  box-shadow: 0 0 0 3px rgba(166, 255, 0, 0.12);
 }
 
 /* All interactive elements get pointer cursor */

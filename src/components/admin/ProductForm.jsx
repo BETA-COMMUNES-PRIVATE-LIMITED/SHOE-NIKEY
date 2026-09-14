@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { MultiImageInput } from '@/components/admin/ImageInput';
 
 const categories = ['Lifestyle', 'Running', 'Basketball', 'Training', 'Slides'];
 
 const emptyForm = {
-  name: '', type: '', category: 'Lifestyle', price: '',
-  description: '', image: '', colorName: 'Default', colorHex: '#000000',
+  name: '', type: '', category: 'Lifestyle', section: 'men', price: '',
+  description: '', images: [], colorName: 'Default', colorHex: '#000000', moreColors: [],
   sizes: '', isNew: false, isComingSoon: false,
 };
 
@@ -22,27 +22,38 @@ export default function ProductForm({ section, product, onSave, onClose }) {
 
   useEffect(() => {
     if (product) {
+      const imgs = Array.isArray(product.images) && product.images.length > 0
+        ? product.images
+        : product.image ? [product.image] : [];
       setForm({
         name: product.name || '',
         type: product.type || '',
         category: product.category || 'Lifestyle',
+        section: product.section || section || 'men',
         price: product.price || '',
         description: product.description || '',
-        image: product.image || '',
-        colorName: product.colorName || 'Default',
-        colorHex: product.colorHex || '#000000',
+        images: imgs,
+        colorName: product.colors?.[0]?.name || product.colorName || 'Default',
+        colorHex: product.colors?.[0]?.hex || product.colorHex || '#000000',
+        moreColors: (product.colors || []).slice(1).map((c) => ({
+          name: c.name || '',
+          hex: c.hex || '#000000',
+          images: Array.isArray(c.images) ? c.images.filter(Boolean) : [],
+        })),
         sizes: product.sizes ? product.sizes.join(', ') : '',
         isNew: product.isNew || false,
         isComingSoon: product.isComingSoon || false,
       });
+    } else {
+      setForm({ ...emptyForm, section: section || 'men' });
     }
-  }, [product]);
+  }, [product, section]);
 
   const validate = () => {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = 'Name is required';
     if (!form.price || Number(form.price) <= 0) newErrors.price = 'Valid price is required';
-    if (!form.image.trim()) newErrors.image = 'Image URL is required';
+    if (form.images.length === 0) newErrors.images = 'At least 1 photo is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -51,25 +62,43 @@ export default function ProductForm({ section, product, onSave, onClose }) {
     if (!validate()) return;
     setSaving(true);
 
+    const activeSection = form.section || section || 'men';
     const sizes = form.sizes
       ? form.sizes.split(',').map((s) => s.trim()).filter(Boolean)
-      : section === 'kids' ? ['0yr', '1yr', '2yr', '3yr', '4yr', '5yr', '6yr', '7yr']
-      : section === 'women' ? [5, 6, 7, 8, 9, 10, 11]
+      : activeSection === 'kids' ? ['0yr', '1yr', '2yr', '3yr', '4yr', '5yr', '6yr', '7yr']
+      : activeSection === 'women' ? [5, 6, 7, 8, 9, 10, 11]
       : [7, 8, 9, 10, 11, 12];
+
+    const first = form.images[0];
+
+    // Build the colors array the storefront reads: colors[0] is the default
+    // (owns the main photo set); extra colors may carry their own photo set —
+    // when they don't, the storefront falls back to the main photos.
+    const extraColors = form.moreColors
+      .map((c, i) => ({
+        name: (c.name || `Color ${i + 2}`).trim(),
+        hex: c.hex || '#000000',
+        images: (c.images || []).filter(Boolean),
+      }))
+      .map((c) => (c.images.length > 0 ? c : { name: c.name, hex: c.hex }));
+    const colors = [
+      { name: (form.colorName || 'Default').trim(), hex: form.colorHex || '#000000', images: form.images },
+      ...extraColors,
+    ];
 
     const productData = {
       name: form.name.trim(),
-      type: form.type.trim() || `${sectionLabel} Shoes`,
+      type: form.type.trim() || `${form.section === 'men' ? "Men's" : form.section === 'women' ? "Women's" : "Kids'"} Shoes`,
       category: form.category,
-      section,
+      section: activeSection,
       price: Number(form.price),
       description: form.description.trim() || `${form.name} — Premium quality footwear.`,
-      image: form.image.trim(),
-      images: [form.image.trim()],
+      image: first,
+      images: form.images,
       sizes,
-      colorName: form.colorName,
-      colorHex: form.colorHex,
-      colors: [{ name: form.colorName, hex: form.colorHex }],
+      colorName: colors[0].name,
+      colorHex: colors[0].hex,
+      colors,
       isNew: form.isNew,
       isComingSoon: form.isComingSoon,
     };
@@ -83,10 +112,6 @@ export default function ProductForm({ section, product, onSave, onClose }) {
         onClose();
       }, 1000);
     }, 400);
-  };
-
-  const handleImageError = () => {
-    setErrors((prev) => ({ ...prev, image: 'Invalid image URL' }));
   };
 
   return (
@@ -113,7 +138,7 @@ export default function ProductForm({ section, product, onSave, onClose }) {
               <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                 {isEdit ? 'Edit Product' : 'Add New Product'}
               </h3>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sectionLabel} Collection</p>
+              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{section ? `${sectionLabel} Collection` : 'All Collections'}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg transition-all hover:bg-white/5" style={{ color: 'var(--text-muted)' }}>
@@ -133,19 +158,86 @@ export default function ProductForm({ section, product, onSave, onClose }) {
 
         {/* Form */}
         <div className="p-6 flex flex-col gap-4">
-          {/* Image Preview */}
-          {form.image && (
-            <div className="flex items-center gap-4 p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
-              <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--bg-card)' }}>
-                <Image src={form.image} alt="Preview" fill className="object-contain p-1" onError={handleImageError} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{form.name || 'Product Name'}</p>
-                <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{form.type || `${sectionLabel} Shoes`} · {form.category}</p>
-                <p className="text-xs font-bold mt-1" style={{ color: 'var(--accent-lime)' }}>${form.price || '0'}</p>
-              </div>
+          {/* Default color + its photos */}
+          <div>
+            <label className="text-[11px] font-bold mb-1.5 block" style={{ color: 'var(--text-primary)' }}>
+              Default Color <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <div className="flex items-center gap-2 mb-3">
+              <input type="color" value={form.colorHex} onChange={(e) => setForm({ ...form, colorHex: e.target.value })}
+                className="w-11 h-11 rounded-xl cursor-pointer border-0 p-0"
+                style={{ backgroundColor: 'var(--bg-surface)' }}
+              />
+              <input type="text" value={form.colorName} onChange={(e) => setForm({ ...form, colorName: e.target.value })}
+                placeholder="White"
+                className="flex-1 h-11 px-4 rounded-xl text-sm outline-none"
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+              />
             </div>
-          )}
+            <MultiImageInput
+              label={`Photos — ${form.colorName || 'Default color'} (main)`}
+              value={form.images}
+              onChange={(images) => { setForm((p) => ({ ...p, images })); setErrors((prev) => ({ ...prev, images: null })); }}
+              max={8}
+              hint="Shown on cards and when no color-specific set exists. First photo is the main one."
+            />
+            {errors.images && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.images}</p>}
+          </div>
+
+          {/* Additional colors, each with its own photo set */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>
+                Additional Colors <span style={{ color: 'var(--text-muted)' }}>({form.moreColors.length})</span>
+              </label>
+              <button type="button" onClick={() => setForm((p) => ({ ...p, moreColors: [...p.moreColors, { name: '', hex: '#cccccc', images: [] }] }))}
+                className="h-8 px-3 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add Color
+              </button>
+            </div>
+            {form.moreColors.length === 0 && (
+              <p className="text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                Optional. Each color can have its own side-view photos — shown when the customer picks that swatch.
+              </p>
+            )}
+            <div className="flex flex-col gap-3">
+              {form.moreColors.map((c, idx) => (
+                <div key={idx} className="p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input type="color" value={c.hex}
+                      onChange={(e) => setForm((p) => ({ ...p, moreColors: p.moreColors.map((x, i) => (i === idx ? { ...x, hex: e.target.value } : x)) }))}
+                      className="w-9 h-9 rounded-lg cursor-pointer border-0 p-0 flex-shrink-0"
+                      style={{ backgroundColor: 'var(--bg-card)' }}
+                    />
+                    <input type="text" value={c.name} placeholder={`Color ${idx + 2} (e.g. Black)`}
+                      onChange={(e) => setForm((p) => ({ ...p, moreColors: p.moreColors.map((x, i) => (i === idx ? { ...x, name: e.target.value } : x)) }))}
+                      className="flex-1 h-9 px-3 rounded-lg text-xs outline-none"
+                      style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                    />
+                    <button type="button" onClick={() => setForm((p) => ({ ...p, moreColors: p.moreColors.filter((_, i) => i !== idx) }))}
+                      className="w-8 h-8 rounded-full text-[11px] font-bold flex-shrink-0 flex items-center justify-center"
+                      style={{ backgroundColor: 'rgba(239,68,68,0.85)', color: '#fff' }}
+                      title="Remove color"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <MultiImageInput
+                    label={`Photos for ${c.name || `Color ${idx + 2}`}`}
+                    value={c.images}
+                    onChange={(images) => setForm((p) => ({ ...p, moreColors: p.moreColors.map((x, i) => (i === idx ? { ...x, images } : x)) }))}
+                    max={8}
+                    hint="Leave empty to reuse the main photos for this color."
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Name & Price */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -202,47 +294,29 @@ export default function ProductForm({ section, product, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Image URL */}
-          <div>
-            <label className="text-[11px] font-bold mb-1.5 flex items-center gap-1" style={{ color: 'var(--text-primary)' }}>
-              Image URL <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <input type="text" value={form.image} onChange={(e) => { setForm({ ...form, image: e.target.value }); setErrors((p) => ({ ...p, image: null })); }}
-              placeholder="/images/r1.png or https://..."
-              className="w-full h-11 px-4 rounded-xl text-sm outline-none transition-all"
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                border: `1px solid ${errors.image ? '#ef4444' : 'var(--border-color)'}`,
-                color: 'var(--text-primary)',
-              }}
-            />
-            {errors.image && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.image}</p>}
-          </div>
-
-          {/* Sizes & Color */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Section (only when the form isn't scoped to a fixed section page) */}
+          {!section && (
             <div>
-              <label className="text-[11px] font-bold mb-1.5 block" style={{ color: 'var(--text-primary)' }}>Sizes (comma separated)</label>
-              <input type="text" value={form.sizes} onChange={(e) => setForm({ ...form, sizes: e.target.value })}
-                placeholder={section === 'kids' ? '0yr, 1yr, 2yr, 3yr' : '7, 8, 9, 10, 11, 12'}
-                className="w-full h-11 px-4 rounded-xl text-sm outline-none"
+              <label className="text-[11px] font-bold mb-1.5 block" style={{ color: 'var(--text-primary)' }}>Section</label>
+              <select value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })}
+                className="w-full h-11 px-4 rounded-xl text-sm outline-none cursor-pointer"
                 style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-              />
+              >
+                <option value="men">Men</option>
+                <option value="women">Women</option>
+                <option value="kids">Kids</option>
+              </select>
             </div>
-            <div>
-              <label className="text-[11px] font-bold mb-1.5 block" style={{ color: 'var(--text-primary)' }}>Color</label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={form.colorHex} onChange={(e) => setForm({ ...form, colorHex: e.target.value })}
-                  className="w-11 h-11 rounded-xl cursor-pointer border-0 p-0"
-                  style={{ backgroundColor: 'var(--bg-surface)' }}
-                />
-                <input type="text" value={form.colorName} onChange={(e) => setForm({ ...form, colorName: e.target.value })}
-                  placeholder="White"
-                  className="flex-1 h-11 px-4 rounded-xl text-sm outline-none"
-                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                />
-              </div>
-            </div>
+          )}
+
+          {/* Sizes */}
+          <div>
+            <label className="text-[11px] font-bold mb-1.5 block" style={{ color: 'var(--text-primary)' }}>Sizes (comma separated)</label>
+            <input type="text" value={form.sizes} onChange={(e) => setForm({ ...form, sizes: e.target.value })}
+              placeholder={(form.section || section) === 'kids' ? '0yr, 1yr, 2yr, 3yr' : '7, 8, 9, 10, 11, 12'}
+              className="w-full h-11 px-4 rounded-xl text-sm outline-none"
+              style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+            />
           </div>
 
           {/* Description */}

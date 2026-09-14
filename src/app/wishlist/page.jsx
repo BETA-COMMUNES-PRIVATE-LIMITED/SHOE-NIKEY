@@ -8,6 +8,7 @@ import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
+import { useAdmin } from '@/context/AdminContext';
 import productsDataMen from '@/data/menProducts';
 import productsDataWomen from '@/data/womenProducts';
 import productsDataKids from '@/data/kidsProducts';
@@ -16,9 +17,10 @@ export default function WishlistPage() {
   const router = useRouter();
   const { wishlistItems, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { customProducts } = useAdmin();
   const [addedKeys, setAddedKeys] = useState({});
 
-  const allProducts = [...productsDataMen, ...productsDataWomen, ...productsDataKids];
+  const allProducts = [...productsDataMen, ...productsDataWomen, ...productsDataKids, ...customProducts];
 
   const handleAddToCart = (item) => {
     const product = allProducts.find((p) => p.id === item.id);

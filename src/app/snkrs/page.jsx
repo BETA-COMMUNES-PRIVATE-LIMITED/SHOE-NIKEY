@@ -5,117 +5,27 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
-
-const drops = [
-  {
-    id: 1,
-    name: 'Air Jordan 8 Retro "Chrome"',
-    type: "Men's Shoes",
-    price: 215,
-    image: '/images/p1-1.png',
-    section: 'men',
-    date: 'Sep 12, 2026',
-    time: '10:00 AM EST',
-    status: 'upcoming',
-    tag: 'Exclusive',
-  },
-  {
-    id: 6,
-    name: 'Nike Metcon 9',
-    type: "Men's Training Shoes",
-    price: 140,
-    image: '/images/training.png',
-    section: 'men',
-    date: 'Sep 8, 2026',
-    time: '10:00 AM EST',
-    status: 'upcoming',
-    tag: 'New Drop',
-  },
-  {
-    id: 4,
-    name: 'Nike Revolution 7',
-    type: "Women's Road Running Shoes",
-    price: 75,
-    image: '/images/rc.png',
-    section: 'women',
-    date: 'Sep 15, 2026',
-    time: '09:00 AM EST',
-    status: 'upcoming',
-    tag: 'Coming Soon',
-  },
-  {
-    id: 12,
-    name: 'Nike Air Max Pulse',
-    type: "Men's Shoes",
-    price: 180,
-    image: '/images/c33.png',
-    section: 'men',
-    date: 'Sep 5, 2026',
-    time: '10:00 AM EST',
-    status: 'live',
-    tag: 'Live Now',
-  },
-  {
-    id: 1,
-    name: 'Sabrina 4 "Light Work"',
-    type: "Women's Shoes",
-    price: 130,
-    image: '/images/women1-1 bb.png',
-    section: 'women',
-    date: 'Sep 1, 2026',
-    time: '10:00 AM EST',
-    status: 'live',
-    tag: 'Live Now',
-  },
-  {
-    id: 2,
-    name: 'Nike Dunk Low Kids',
-    type: "Kids' Shoes",
-    price: 85,
-    image: '/images/pic2 kid.png',
-    section: 'kids',
-    date: 'Sep 3, 2026',
-    time: '10:00 AM EST',
-    status: 'live',
-    tag: 'Live Now',
-  },
-  {
-    id: 9,
-    name: 'Nike Victori One',
-    type: "Men's Slides",
-    price: 55,
-    image: '/images/ssss1.png',
-    section: 'men',
-    date: 'Aug 28, 2026',
-    time: '10:00 AM EST',
-    status: 'sold-out',
-    tag: 'Sold Out',
-  },
-  {
-    id: 5,
-    name: 'Nike Air Max 270 G',
-    type: "Women's Shoes",
-    price: 170,
-    image: '/images/r1.png',
-    section: 'women',
-    date: 'Aug 25, 2026',
-    time: '10:00 AM EST',
-    status: 'sold-out',
-    tag: 'Sold Out',
-  },
-];
+import { useAdmin } from '@/context/AdminContext';
 
 const filters = ['All', 'Live Now', 'Upcoming', 'Sold Out'];
 
 export default function SNKRSPage() {
+  const { drops, isLoaded } = useAdmin();
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const filtered = activeFilter === 'All' ? drops : drops.filter((d) => {
+  // Only active drops; when context hasn't loaded yet show nothing to avoid
+  // flashing defaults that the admin may have changed.
+  const visible = (isLoaded ? drops : []).filter((d) => d.active !== false);
+
+  const filtered = activeFilter === 'All' ? visible : visible.filter((d) => {
     if (activeFilter === 'Live Now') return d.status === 'live';
     if (activeFilter === 'Upcoming') return d.status === 'upcoming';
     if (activeFilter === 'Sold Out') return d.status === 'sold-out';
     return true;
   });
+
+  // Featured drop = first live drop (or first visible)
+  const featured = filtered.find((d) => d.status === 'live') || filtered[0];
 
   const statusColor = (status) => {
     if (status === 'live') return '#22c55e';
@@ -127,6 +37,14 @@ export default function SNKRSPage() {
     if (status === 'live') return 'rgba(34, 197, 94, 0.1)';
     if (status === 'upcoming') return 'rgba(166, 255, 0, 0.1)';
     return 'var(--bg-surface)';
+  };
+
+  const hrefFor = (d) => {
+    if (d.productId && typeof d.productId === 'string' && d.productId.includes('-')) {
+      const [sec, id] = d.productId.split('-');
+      return `/${sec}/${id}`;
+    }
+    return `/${d.section}/${d.id}`;
   };
 
   return (
@@ -165,7 +83,7 @@ export default function SNKRSPage() {
               {f}
               {f !== 'All' && (
                 <span className="ml-1.5 text-[9px] opacity-70">
-                  ({drops.filter((d) => {
+                  ({visible.filter((d) => {
                     if (f === 'Live Now') return d.status === 'live';
                     if (f === 'Upcoming') return d.status === 'upcoming';
                     if (f === 'Sold Out') return d.status === 'sold-out';
@@ -178,37 +96,39 @@ export default function SNKRSPage() {
         </div>
 
         {/* Featured Drop */}
-        {activeFilter === 'All' && (
+        {activeFilter === 'All' && featured && (
           <div className="mb-8">
             <h2 className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: 'var(--text-primary)' }}>
               Featured Drop
             </h2>
-            <Link href="/men/12" className="block rounded-2xl overflow-hidden transition-all hover:scale-[1.01]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <Link href={hrefFor(featured)} className="block rounded-2xl overflow-hidden transition-all hover:scale-[1.01]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="relative aspect-square md:aspect-auto" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                  <Image src="/images/c33.png" alt="Nike Air Max Pulse" fill className="object-contain p-8" />
-                  <span className="absolute top-4 left-4 text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-                    ● LIVE NOW
+                  <Image src={featured.images?.[0] || featured.image} alt={featured.name} fill className="object-contain p-8" />
+                  <span className="absolute top-4 left-4 text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: statusBg(featured.status), color: statusColor(featured.status), border: `1px solid ${featured.status === 'live' ? 'rgba(34,197,94,0.3)' : 'var(--border-color)'}` }}>
+                    {featured.status === 'live' && '● '}{featured.tag || featured.status}
                   </span>
                 </div>
                 <div className="p-6 md:p-8 flex flex-col justify-center">
-                  <span className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--accent-lime)' }}>Exclusive Release</span>
-                  <h3 className="text-xl sm:text-2xl font-extrabold mb-2" style={{ color: 'var(--text-primary)' }}>Nike Air Max Pulse</h3>
-                  <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Men&apos;s Shoes</p>
-                  <p className="text-2xl font-extrabold mb-4" style={{ color: 'var(--text-primary)' }}>$180</p>
+                  <span className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--accent-lime)' }}>
+                    {featured.status === 'live' ? 'Live Release' : 'Exclusive Release'}
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-extrabold mb-2" style={{ color: 'var(--text-primary)' }}>{featured.name}</h3>
+                  <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>{featured.type}</p>
+                  <p className="text-2xl font-extrabold mb-4" style={{ color: 'var(--text-primary)' }}>${featured.price}</p>
                   <div className="flex items-center gap-4 mb-6">
                     <div>
                       <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Launch Date</p>
-                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>Sep 5, 2026</p>
+                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{featured.date || '—'}</p>
                     </div>
                     <div className="w-px h-8" style={{ backgroundColor: 'var(--border-color)' }} />
                     <div>
                       <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Time</p>
-                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>10:00 AM EST</p>
+                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{featured.time || '—'}</p>
                     </div>
                   </div>
-                  <button className="w-full sm:w-auto h-11 px-8 rounded-full text-sm font-bold transition-all active:scale-[0.98]" style={{ backgroundColor: '#22c55e', color: '#fff' }}>
-                    Notify Me
+                  <button className="w-full sm:w-auto h-11 px-8 rounded-full text-sm font-bold transition-all active:scale-[0.98]" style={{ backgroundColor: featured.status === 'live' ? '#22c55e' : 'var(--accent-lime)', color: featured.status === 'live' ? '#fff' : '#000' }}>
+                    {featured.status === 'live' ? 'Shop Now' : 'Notify Me'}
                   </button>
                 </div>
               </div>
@@ -223,14 +143,14 @@ export default function SNKRSPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
           {filtered.map((drop) => (
             <Link
-              key={`${drop.section}-${drop.id}`}
-              href={`/${drop.section}/${drop.id}`}
+              key={drop.id}
+              href={hrefFor(drop)}
               className="rounded-2xl overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
               style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
             >
               {/* Image */}
               <div className="relative aspect-square" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                <Image src={drop.image} alt={drop.name} fill className="object-contain p-6" />
+                <Image src={drop.images?.[0] || drop.image} alt={drop.name} fill className="object-contain p-6" />
 
                 {/* Status badge */}
                 <span
@@ -241,8 +161,13 @@ export default function SNKRSPage() {
                     border: `1px solid ${drop.status === 'live' ? 'rgba(34,197,94,0.3)' : drop.status === 'upcoming' ? 'rgba(166,255,0,0.2)' : 'var(--border-color)'}`,
                   }}
                 >
-                  {drop.status === 'live' && '● '}{drop.tag}
+                  {drop.status === 'live' && '● '}{drop.tag || drop.status}
                 </span>
+                {(drop.images?.length || 0) > 1 && (
+                  <span className="absolute bottom-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: '#fff' }}>
+                    {drop.images.length} pics
+                  </span>
+                )}
               </div>
 
               {/* Info */}

@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAdmin } from '@/context/AdminContext';
-import productsDataKids from '@/data/kidsProducts';
+import productsDataWomen from '@/data/womenProducts';
 import ProductForm from '@/components/admin/ProductForm';
 
 const categories = ['All', 'Lifestyle', 'Running', 'Basketball', 'Training', 'Slides'];
 
-export default function AdminKidsProductsPage() {
-  const { customProducts, addProduct, updateProduct, deleteProduct } = useAdmin();
+export default function AdminWomenProductsPage() {
+  const { customProducts, addProduct, updateProduct, deleteProduct, applyProductOverrides } = useAdmin();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -17,8 +17,21 @@ export default function AdminKidsProductsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
 
-  const builtIn = productsDataKids.map((p) => ({ ...p, section: 'kids', isBuiltIn: true }));
-  const custom = customProducts.filter((p) => p.section === 'kids').map((p) => ({ ...p, isBuiltIn: false }));
+  // Deep-link: /verre-admin/products/women?edit=ID opens the editor for that product
+  useEffect(() => {
+    const id = Number(new URLSearchParams(window.location.search).get('edit'));
+    if (!id) return;
+    const all = [...applyProductOverrides(productsDataWomen.map((p) => ({ ...p, section: 'women', isBuiltIn: true }))), ...customProducts.filter((p) => p.section === 'women')];
+    const target = all.find((p) => p.id === id);
+    if (target) {
+      setEditingProduct(target);
+      setShowForm(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const builtIn = applyProductOverrides(productsDataWomen.map((p) => ({ ...p, section: 'women', isBuiltIn: true })));
+  const custom = customProducts.filter((p) => p.section === 'women').map((p) => ({ ...p, isBuiltIn: false }));
   const allProducts = [...builtIn, ...custom];
 
   let filtered = allProducts;
@@ -45,12 +58,12 @@ export default function AdminKidsProductsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-extrabold" style={{ color: 'var(--text-primary)' }}>Kids&apos; Products</h1>
+          <h1 className="text-lg font-extrabold" style={{ color: 'var(--text-primary)' }}>Women&apos;s Products</h1>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{totalProducts} products · {custom.length} custom added</p>
         </div>
         <button onClick={() => { setEditingProduct(null); setShowForm(true); }}
           className="px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all active:scale-95"
-          style={{ backgroundColor: '#a855f7', color: '#fff' }}>
+          style={{ backgroundColor: '#f472b6', color: '#000' }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
           </svg>
@@ -58,7 +71,7 @@ export default function AdminKidsProductsPage() {
         </button>
       </div>
 
-      {showForm && <ProductForm section="kids" product={editingProduct} onSave={handleSave} onClose={handleCloseForm} />}
+      {showForm && <ProductForm section="women" product={editingProduct} onSave={handleSave} onClose={handleCloseForm} />}
 
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
@@ -80,7 +93,7 @@ export default function AdminKidsProductsPage() {
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[{ label: 'Total', value: totalProducts, color: '#a855f7' }, { label: 'In Stock', value: inStock, color: '#22c55e' }, { label: 'Coming Soon', value: comingSoon, color: '#fbbf24' }, { label: 'Avg Price', value: `$${avgPrice}`, color: 'var(--text-primary)' }].map((s) => (
+        {[{ label: 'Total', value: totalProducts, color: '#f472b6' }, { label: 'In Stock', value: inStock, color: '#22c55e' }, { label: 'Coming Soon', value: comingSoon, color: '#fbbf24' }, { label: 'Avg Price', value: `$${avgPrice}`, color: 'var(--text-primary)' }].map((s) => (
           <div key={s.label} className="p-4 rounded-2xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
             <p className="text-xl font-extrabold" style={{ color: s.color }}>{s.value}</p>
@@ -97,10 +110,10 @@ export default function AdminKidsProductsPage() {
             <input type="text" placeholder="Search products..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent outline-none text-xs w-full" style={{ color: 'var(--text-primary)' }} />
           </div>
           <div className="flex items-center gap-1 p-1 rounded-xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <button onClick={() => setViewMode('grid')} className="p-2 rounded-lg transition-all" style={{ backgroundColor: viewMode === 'grid' ? '#a855f7' : 'transparent', color: viewMode === 'grid' ? '#fff' : 'var(--text-muted)' }}>
+            <button onClick={() => setViewMode('grid')} className="p-2 rounded-lg transition-all" style={{ backgroundColor: viewMode === 'grid' ? '#f472b6' : 'transparent', color: viewMode === 'grid' ? '#000' : 'var(--text-muted)' }}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
             </button>
-            <button onClick={() => setViewMode('list')} className="p-2 rounded-lg transition-all" style={{ backgroundColor: viewMode === 'list' ? '#a855f7' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--text-muted)' }}>
+            <button onClick={() => setViewMode('list')} className="p-2 rounded-lg transition-all" style={{ backgroundColor: viewMode === 'list' ? '#f472b6' : 'transparent', color: viewMode === 'list' ? '#000' : 'var(--text-muted)' }}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
             </button>
           </div>
@@ -108,7 +121,7 @@ export default function AdminKidsProductsPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
           {categories.map((c) => (
             <button key={c} onClick={() => setActiveCategory(c)} className="px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all active:scale-95"
-              style={{ backgroundColor: activeCategory === c ? '#a855f7' : 'var(--bg-surface)', color: activeCategory === c ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{c}</button>
+              style={{ backgroundColor: activeCategory === c ? '#f472b6' : 'var(--bg-surface)', color: activeCategory === c ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{c}</button>
           ))}
         </div>
       </div>
@@ -119,7 +132,7 @@ export default function AdminKidsProductsPage() {
             <div key={`${product.section}-${product.id}`} className="group rounded-2xl overflow-hidden transition-all hover:scale-[1.02]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <div className="relative w-full aspect-square" style={{ backgroundColor: 'var(--bg-surface)' }}>
                 <Image src={product.image} alt={product.name} fill className="object-contain p-4" />
-                {product.isNew && <span className="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#a855f7', color: '#fff' }}>NEW</span>}
+                {product.isNew && <span className="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#f472b6', color: '#000' }}>NEW</span>}
                 {product.isComingSoon && <span className="absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--accent-red)', color: '#fff' }}>SOON</span>}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                   <button onClick={() => handleEdit(product)} className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110" style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}>
@@ -141,7 +154,7 @@ export default function AdminKidsProductsPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-3">
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{product.category}</span>
-                  {product.isBuiltIn ? <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.2)' }}>Built-in</span> : <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(166, 255, 0, 0.1)', color: 'var(--accent-lime)', border: '1px solid rgba(166, 255, 0, 0.2)' }}>Custom</span>}
+                  {product.isBuiltIn ? <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(244, 114, 182, 0.1)', color: '#f472b6', border: '1px solid rgba(244, 114, 182, 0.2)' }}>Built-in</span> : <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(166, 255, 0, 0.1)', color: 'var(--accent-lime)', border: '1px solid rgba(166, 255, 0, 0.2)' }}>Custom</span>}
                 </div>
               </div>
             </div>
@@ -165,7 +178,7 @@ export default function AdminKidsProductsPage() {
               <div className="col-span-3 md:col-span-2"><span className="text-[10px] font-semibold px-2 py-0.5 rounded-md" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{product.category}</span></div>
               <div className="col-span-2 md:col-span-1"><span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>${product.price}</span></div>
               <div className="col-span-1 md:col-span-1 hidden md:block">{product.rating ? <span className="text-[10px] flex items-center gap-1"><span style={{ color: '#FFD700' }}>★</span><span style={{ color: 'var(--text-muted)' }}>{product.rating}</span></span> : <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>—</span>}</div>
-              <div className="col-span-2 md:col-span-1 hidden md:block">{product.isComingSoon ? <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24' }}>Soon</span> : product.isNew ? <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>New</span> : <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>Active</span>}</div>
+              <div className="col-span-2 md:col-span-1 hidden md:block">{product.isComingSoon ? <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24' }}>Soon</span> : product.isNew ? <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(244, 114, 182, 0.1)', color: '#f472b6' }}>New</span> : <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>Active</span>}</div>
               <div className="col-span-12 md:col-span-3 flex items-center justify-end gap-2">
                 <button onClick={() => handleEdit(product)} className="text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all hover:bg-blue-500/10" style={{ color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.2)' }}>
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>Edit

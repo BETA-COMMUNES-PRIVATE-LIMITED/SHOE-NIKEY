@@ -7,15 +7,22 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAdmin } from '@/context/AdminContext';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, cartTotal, cartCount, clearCart } = useCart();
+  const { coupons, settings, addOrder } = useAdmin();
   const [currentStep, setCurrentStep] = useState(0);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
 
   // Shipping form state
   const [shipping, setShipping] = useState({
@@ -31,9 +38,55 @@ export default function CheckoutPage() {
   const [shippingErrors, setShippingErrors] = useState({});
   const [paymentErrors, setPaymentErrors] = useState({});
 
-  const shippingCost = cartTotal >= 100 ? 0 : 10;
-  const tax = Math.round(cartTotal * 0.08 * 100) / 100;
-  const total = cartTotal + shippingCost + tax;
+  const freeShipThreshold = settings?.freeShipThreshold ?? 100;
+  const taxRate = (settings?.taxRate ?? 8) / 100;
+  const shippingCost = cartTotal >= freeShipThreshold ? 0 : 10;
+  const tax = Math.round(cartTotal * taxRate * 100) / 100;
+
+  // Coupon discount
+  let discount = 0;
+  let freeShipFromCoupon = false;
+  if (appliedCoupon && appliedCoupon.active) {
+    if (appliedCoupon.type === 'percent') discount = Math.round(cartTotal * (appliedCoupon.value / 100) * 100) / 100;
+    else if (appliedCoupon.type === 'fixed') discount = Math.min(appliedCoupon.value, cartTotal);
+    else if (appliedCoupon.type === 'shipping') freeShipFromCoupon = true;
+  }
+  const finalShipping = freeShipFromCoupon ? 0 : shippingCost;
+  const total = Math.max(cartTotal - discount, 0) + finalShipping + tax;
+
+  const applyCoupon = () => {
+    setCouponError('');
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    const found = coupons.find((c) => c.code === code && c.active);
+    if (!found) {
+      setCouponError('Invalid or expired code');
+      setAppliedCoupon(null);
+      return;
+    }
+    if (found.expires && new Date(found.expires) < new Date()) {
+      setCouponError('This code has expired');
+      setAppliedCoupon(null);
+      return;
+    }
+    if (found.usageLimit > 0 && found.used >= found.usageLimit) {
+      setCouponError('This code has reached its usage limit');
+      setAppliedCoupon(null);
+      return;
+    }
+    if (cartTotal < (found.minOrder || 0)) {
+      setCouponError(`Minimum order of $${found.minOrder} required`);
+      setAppliedCoupon(null);
+      return;
+    }
+    setAppliedCoupon(found);
+    setCouponInput('');
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
+  };
 
   // Redirect if cart empty
   if (cartCount === 0 && !orderPlaced) {
@@ -124,8 +177,32 @@ export default function CheckoutPage() {
     if (currentStep === 0 && !validateShipping()) return;
     if (currentStep === 1 && !validatePayment()) return;
     if (currentStep === 2) {
-      // Place order
+      // Place order — push into admin context so it appears in /verre-admin/orders
       const num = 'VR-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      addOrder({
+        id: num,
+        customer: {
+          name: `${shipping.firstName} ${shipping.lastName}`.trim(),
+          email: shipping.email,
+          phone: shipping.phone,
+        },
+        items: cartItems.map((item) => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.colorName,
+        })),
+        subtotal: cartTotal,
+        discount,
+        shipping: finalShipping,
+        tax,
+        total: Number(total.toFixed(2)),
+        coupon: appliedCoupon ? appliedCoupon.code : null,
+        status: 'pending',
+        date: new Date().toISOString().slice(0, 10),
+        address: `${shipping.address}${shipping.apt ? `, ${shipping.apt}` : ''}, ${shipping.city}, ${shipping.state} ${shipping.zip}`,
+      });
       setOrderNumber(num);
       setOrderPlaced(true);
       clearCart();
@@ -385,19 +462,64 @@ export default function CheckoutPage() {
 
               <div className="h-px mb-4" style={{ backgroundColor: 'var(--border-color)' }} />
 
+              {/* Coupon Code */}
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between p-3 rounded-xl mb-4" style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)' }}>
+                  <div>
+                    <p className="text-[11px] font-extrabold" style={{ color: '#22c55e' }}>{appliedCoupon.code} applied ✓</p>
+                    <p className="text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                      {appliedCoupon.type === 'percent' && `${appliedCoupon.value}% off`}
+                      {appliedCoupon.type === 'fixed' && `$${appliedCoupon.value} off`}
+                      {appliedCoupon.type === 'shipping' && 'Free shipping'}
+                    </p>
+                  </div>
+                  <button onClick={removeCoupon} className="text-[10px] font-bold" style={{ color: '#ef4444' }}>
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder="Discount code"
+                      className="flex-1 h-10 px-3 rounded-xl text-xs outline-none uppercase"
+                      style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      disabled={!couponInput.trim()}
+                      className="h-10 px-4 rounded-xl text-[11px] font-bold transition-all active:scale-95 disabled:opacity-40"
+                      style={{ backgroundColor: 'var(--accent-lime)', color: '#000' }}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {couponError && <p className="text-[10px] mt-1.5" style={{ color: 'var(--accent-red)' }}>{couponError}</p>}
+                </div>
+              )}
+
               <div className="flex flex-col gap-2.5">
                 <div className="flex justify-between">
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Subtotal</span>
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>${cartTotal.toFixed(2)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-xs" style={{ color: '#22c55e' }}>Discount ({appliedCoupon.code})</span>
+                    <span className="text-xs font-semibold" style={{ color: '#22c55e' }}>−${discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Shipping</span>
-                  <span className="text-xs font-semibold" style={{ color: shippingCost === 0 ? '#22c55e' : 'var(--text-primary)' }}>
-                    {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
+                  <span className="text-xs font-semibold" style={{ color: finalShipping === 0 ? '#22c55e' : 'var(--text-primary)' }}>
+                    {finalShipping === 0 ? 'FREE' : `$${finalShipping.toFixed(2)}`}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Tax</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Tax ({settings?.taxRate ?? 8}%)</span>
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>${tax.toFixed(2)}</span>
                 </div>
 
@@ -427,7 +549,7 @@ export default function CheckoutPage() {
                   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: '#22c55e' }}>
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
-                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Free shipping on orders over $100</span>
+                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Free shipping on orders over ${freeShipThreshold}</span>
                 </div>
               </div>
             </div>

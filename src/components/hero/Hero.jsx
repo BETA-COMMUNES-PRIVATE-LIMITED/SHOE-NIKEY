@@ -3,53 +3,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAdmin } from '@/context/AdminContext';
 
-const slides = [
-  {
-    label: 'NEW ARRIVAL',
-    title: (
-      <>
-        JUST <br /> DO IT.
-      </>
-    ),
-    subtitle: 'NIKE AIR MAX 270',
-    desc: 'Iconic style. Unmatched comfort. Designed to keep you moving forward.',
-    image: '/images/hero1.png',
-    alt: 'Nike Air Max 270',
-    imageClassName: 'object-cover',
-    imageStyle: { objectPosition: 'center 40%' },
-  },
-  {
-    label: 'TRENDING NOW',
-    title: (
-      <>
-        BREAK <br /> LIMITS.
-      </>
-    ),
-    subtitle: 'NIKE AIR MAX 90',
-    desc: 'Classic design meets modern performance. Built for those who never stop.',
-    image: '/images/hero2.png',
-    alt: 'Nike Air Max 90',
-    imageClassName: 'object-contain object-center',
-    imageStyle: { transform: 'scale(1.15)' },
-  },
-  {
-    label: 'TRAINING',
-    title: (
-      <>
-        TRAIN <br /> HARD.
-      </>
-    ),
-    subtitle: 'NIKE TRAINING COLLECTION',
-    desc: 'Push your boundaries. Every rep, every set, every day.',
-    image: '/images/training.png',
-    alt: 'Nike Training Collection',
-    imageClassName: 'object-contain object-center',
-    imageStyle: { transform: 'scale(1.15)' },
-  },
+const fallbackSlides = [
+  { id: 1, label: 'NEW ARRIVAL', title: 'JUST DO IT.', subtitle: 'NIKE AIR MAX 270', desc: 'Iconic style. Unmatched comfort. Designed to keep you moving forward.', image: '/images/hero1.png', active: true },
+  { id: 2, label: 'TRENDING NOW', title: 'BREAK LIMITS.', subtitle: 'NIKE AIR MAX 90', desc: 'Classic design meets modern performance. Built for those who never stop.', image: '/images/hero2.png', active: true },
+  { id: 3, label: 'TRAINING', title: 'TRAIN HARD.', subtitle: 'NIKE TRAINING COLLECTION', desc: 'Push your boundaries. Every rep, every set, every day.', image: '/images/training.png', active: true },
 ];
 
 const Hero = () => {
+  const { slides: adminSlides, isLoaded } = useAdmin();
+  const slides = (isLoaded && adminSlides.length > 0 ? adminSlides : fallbackSlides)
+    .filter((s) => s.active !== false)
+    .map((s) => ({
+      ...s,
+      title: (
+        <>
+          {s.title.split(' ').map((word, i, arr) => (
+            <React.Fragment key={i}>
+              {word}{i < arr.length - 1 && <br />}
+            </React.Fragment>
+          ))}
+        </>
+      ),
+      alt: s.subtitle || s.title,
+      imageClassName: 'object-contain object-center',
+    }));
+
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -67,11 +47,12 @@ const Hero = () => {
 
   // Auto-play every 5 seconds
   useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(() => {
-      goToSlide((current + 1) % slides.length);
+      setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [current, goToSlide]);
+  }, [slides.length]);
 
   const features = [
     {
@@ -117,7 +98,9 @@ const Hero = () => {
     },
   ];
 
-  const slide = slides[current];
+  const slide = slides[Math.min(current, slides.length - 1)];
+
+  if (!slide) return null;
 
   return (
     <section className="w-full flex flex-col gap-10 py-8">

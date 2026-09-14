@@ -9,11 +9,24 @@ import Footer from '@/components/footer/Footer';
 import productsData from '@/data/kidsProducts';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useAdmin } from '@/context/AdminContext';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const product = productsData.find((p) => p.id === Number(params.id));
+  const { customProducts, applyProductOverrides, reviews: allReviews, isLoaded } = useAdmin();
+
+  // Approved reviews for this product (moderated in admin)
+  const productReviews = isLoaded
+    ? allReviews.filter((r) => r.status === 'approved' && r.product === product?.name)
+    : [];
+
+  // Built-in catalog (with admin edits applied) + products added via the admin panel
+  const allProducts = [
+    ...applyProductOverrides(productsData),
+    ...customProducts.filter((p) => p.section === 'kids'),
+  ];
+  const product = allProducts.find((p) => p.id === Number(params.id));
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -232,6 +245,28 @@ export default function ProductDetailPage() {
                 >
                   {addedToCart ? '✓ Added to Cart' : selectedSize ? 'Add to Cart' : 'Select a Size'}
                 </button>
+
+                {/* Customer Reviews (moderated in admin) */}
+                {productReviews.length > 0 && (
+                  <div className="flex flex-col gap-3 mt-2 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>
+                      Reviews ({productReviews.length})
+                    </p>
+                    {productReviews.map((r) => (
+                      <div key={r.id} className="p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{r.customer}</span>
+                          <span className="text-[10px]">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <span key={i} style={{ color: i <= r.rating ? '#FFD700' : 'var(--border-color)' }}>★</span>
+                            ))}
+                          </span>
+                        </div>
+                        <p className="text-[11px] mt-1 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{r.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Favorite / Wishlist */}
                 <button

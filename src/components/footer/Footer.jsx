@@ -3,9 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAdmin } from '@/context/AdminContext';
 
 const Footer = () => {
   const pathname = usePathname();
+  const { settings, isLoaded } = useAdmin();
+  const storeName = isLoaded && settings?.storeName ? settings.storeName : 'Vére';
   const shopLinks = [
     { label: 'Men', href: '/men' },
     { label: 'Women', href: '/women' },
@@ -188,9 +191,8 @@ const Footer = () => {
         </div>
 
         {/* Bottom Copyright */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-          <span>© 2026 Vére, Inc. All Rights Reserved.</span>
-          <Link href="/admin" className="text-[10px] opacity-30 hover:opacity-60 transition-opacity">Admin</Link>
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <span>© 2026 {storeName}, Inc. All Rights Reserved.</span>
         </div>
 
       </div>

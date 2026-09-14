@@ -8,17 +8,25 @@ import FilterBar from '@/components/shared/FilterBar';
 import ProductCard from '@/components/shared/ProductCard';
 import { categories, sizes, colorOptions, sortOptions } from '@/data/menProducts';
 import productsData from '@/data/menProducts';
+import { useAdmin } from '@/context/AdminContext';
 
 export default function MenPage() {
+  const { customProducts, applyProductOverrides } = useAdmin();
   const [selectedCategory, setSelectedCategory] = useState('All Shoes');
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
 
+  // Built-in catalog (with admin edits applied) + products added via the admin panel
+  const allProducts = useMemo(
+    () => [...applyProductOverrides(productsData), ...customProducts.filter((p) => p.section === 'men')],
+    [customProducts, applyProductOverrides]
+  );
+
   // Filter + Sort Logic
   const filteredProducts = useMemo(() => {
-    let results = productsData.filter((item) => {
+    let results = allProducts.filter((item) => {
       // Category Filter
       const matchCategory = selectedCategory === 'All Shoes' || item.category === selectedCategory;
 
@@ -58,7 +66,7 @@ export default function MenPage() {
     }
 
     return results;
-  }, [selectedCategory, selectedSize, selectedColor, searchQuery, sortBy]);
+  }, [allProducts, selectedCategory, selectedSize, selectedColor, searchQuery, sortBy]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>

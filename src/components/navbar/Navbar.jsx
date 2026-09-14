@@ -82,6 +82,21 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             <SearchBar />
 
+            {/* Admin Panel access — deliberately dim; brightens on hover */}
+            <Link
+              href="/verre-admin"
+              className="p-2 rounded-full opacity-30 hover:opacity-100 transition-opacity"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label="Admin Panel"
+              title="Admin Panel"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <circle cx="12" cy="10" r="1.6" fill="currentColor" stroke="none" />
+                <path d="M12 11.6V15" strokeLinecap="round" />
+              </svg>
+            </Link>
+
             {/* Wishlist */}
             <Link href="/wishlist" className="p-2 rounded-full transition-opacity hover:opacity-70 relative" style={{ color: 'var(--text-primary)' }} aria-label="Wishlist">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -225,6 +240,19 @@ const Navbar = () => {
           </button>
           <Link href="/faqs" className="text-xs transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }} onClick={() => setMobileOpen(false)}>Help</Link>
           <Link href="/about" className="text-xs transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }} onClick={() => setMobileOpen(false)}>About Us</Link>
+          <Link
+            href="/verre-admin"
+            className="mt-2 h-10 rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+            style={{ backgroundColor: 'var(--accent-lime)', color: '#000' }}
+            onClick={() => setMobileOpen(false)}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <circle cx="12" cy="10" r="1.6" fill="currentColor" stroke="none" />
+              <path d="M12 11.6V15" strokeLinecap="round" />
+            </svg>
+            Admin Panel
+          </Link>
         </div>
       </div>
     </>

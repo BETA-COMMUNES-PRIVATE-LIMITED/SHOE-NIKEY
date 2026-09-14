@@ -1,51 +1,7 @@
 'use client';
 
 import PageLayout from '@/components/shared/PageLayout';
-
-const articles = [
-  {
-    date: 'Aug 28, 2026',
-    category: 'Product Launch',
-    title: 'Introducing the Nike Air Max Pulse — Available Now',
-    excerpt: 'The Air Max Pulse brings visible Air technology to a new generation. Inspired by the London music scene, it delivers energy and style in every step.',
-    featured: true,
-  },
-  {
-    date: 'Aug 20, 2026',
-    category: 'Collection',
-    title: 'Back to School: The Best Kids\' Sneakers for 2026',
-    excerpt: 'From the court to the classroom, check out our top picks for the new school year. Durable, stylish, and ready for anything.',
-    featured: false,
-  },
-  {
-    date: 'Aug 15, 2026',
-    category: 'Sustainability',
-    title: 'Our Journey to Zero Waste: Mid-Year Update',
-    excerpt: 'We\'re on track to reduce packaging waste by 50%. Here\'s a look at what we\'ve accomplished so far and what\'s next.',
-    featured: false,
-  },
-  {
-    date: 'Aug 10, 2026',
-    category: 'Community',
-    title: 'Vére x Local Artists: Sneaker Customization Event',
-    excerpt: 'We partnered with local artists for an exclusive sneaker customization workshop. See the amazing one-of-a-kind designs that were created.',
-    featured: false,
-  },
-  {
-    date: 'Aug 5, 2026',
-    category: 'Product Launch',
-    title: 'Jordan 6 Rings — Now Available in New Colorways',
-    excerpt: 'The iconic Jordan 6 Rings returns with fresh colorways. Six championship rings, one bold silhouette.',
-    featured: false,
-  },
-  {
-    date: 'Jul 28, 2026',
-    category: 'Style Guide',
-    title: 'Summer to Fall: How to Transition Your Sneaker Rotation',
-    excerpt: 'The seasons are changing, but your sneaker game doesn\'t have to. Our guide to keeping it fresh from August to October.',
-    featured: false,
-  },
-];
+import { useAdmin } from '@/context/AdminContext';
 
 const categoryColors = {
   'Product Launch': 'var(--accent-lime)',
@@ -56,15 +12,22 @@ const categoryColors = {
 };
 
 export default function NewsPage() {
+  const { pageContent, getPageData } = useAdmin();
+  const content = pageContent?.news;
+  const data = getPageData('news');
+  const articles = data.articles || [];
+
   return (
     <PageLayout title="News & Stories" breadcrumb="News">
-      <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
-        The latest from Vére — product drops, stories, and everything happening in our world.
-      </p>
+      {(content?.intro || content?.sections?.length > 0) && (
+        <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
+          {content.intro || 'The latest from Vére — product drops, stories, and everything happening in our world.'}
+        </p>
+      )}
 
-      {/* Featured Article */}
-      {articles.filter(a => a.featured).map((article) => (
-        <div key={article.title} className="p-6 rounded-2xl mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+      {/* Featured Article — admin-managed */}
+      {articles.filter((a) => a.featured).map((article, i) => (
+        <div key={i} className="p-6 rounded-2xl mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="flex items-center gap-3 mb-3">
             <span className="text-[10px] font-bold px-2.5 py-1 rounded-md" style={{ backgroundColor: 'rgba(166, 255, 0, 0.15)', color: 'var(--accent-lime)' }}>
               Featured
@@ -85,9 +48,9 @@ export default function NewsPage() {
         </div>
       ))}
 
-      {/* Other Articles */}
+      {/* Other Articles — admin-managed */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        {articles.filter(a => !a.featured).map((article, idx) => (
+        {articles.filter((a) => !a.featured).map((article, idx) => (
           <div
             key={idx}
             className="p-5 rounded-2xl flex flex-col"
@@ -127,6 +90,18 @@ export default function NewsPage() {
           </button>
         </div>
       </div>
+
+      {/* Admin-managed sections */}
+      {content?.sections?.length > 0 && (
+        <div className="flex flex-col gap-6 mt-10">
+          {content.sections.map((s, idx) => (
+            <div key={idx} className="p-5 rounded-2xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <h2 className="text-sm font-bold tracking-wider uppercase mb-3" style={{ color: 'var(--text-primary)' }}>{s.title}</h2>
+              <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-muted)' }}>{s.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </PageLayout>
   );
 }

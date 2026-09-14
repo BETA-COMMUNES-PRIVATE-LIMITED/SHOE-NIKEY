@@ -1,21 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import PasswordInput from '@/components/shared/PasswordInput';
+import { useRouter, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { useAdmin } from '@/context/AdminContext';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { login, isAdmin } = useAdmin();
+  const { login, isAdmin, adminProfile, adminPassword } = useAdmin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (isAdmin) {
-    router.push('/admin');
-    return null;
+    redirect('/verre-admin');
   }
 
   const handleSubmit = (e) => {
@@ -26,9 +26,9 @@ export default function AdminLoginPage() {
     setTimeout(() => {
       const success = login(email, password);
       if (success) {
-        router.push('/admin');
+        router.push('/verre-admin');
       } else {
-        setError('Invalid credentials. Try admin@verre.com / admin123');
+        setError(`Invalid credentials. Try ${adminProfile.email} / ${adminPassword || 'admin123'}`);
       }
       setLoading(false);
     }, 800);
@@ -67,13 +67,12 @@ export default function AdminLoginPage() {
 
           <div className="mb-6">
             <label className="text-[11px] font-bold mb-1.5 block" style={{ color: 'var(--text-primary)' }}>Password</label>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
               required
-              className="w-full h-11 px-4 rounded-xl text-sm outline-none transition-all"
+              className="w-full h-11 px-4 pr-11 rounded-xl text-sm outline-none transition-all"
               style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
@@ -97,7 +96,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-4 p-3 rounded-xl text-center" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
             <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-              Demo: <span className="font-bold" style={{ color: 'var(--text-primary)' }}>admin@verre.com</span> / <span className="font-bold" style={{ color: 'var(--text-primary)' }}>admin123</span>
+              Demo: <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{adminProfile.email}</span> / <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{adminPassword || 'admin123'}</span>
             </p>
           </div>
         </form>

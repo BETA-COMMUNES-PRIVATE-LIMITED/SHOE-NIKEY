@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import PageLayout from '@/components/shared/PageLayout';
+import { useAdmin } from '@/context/AdminContext';
 
-const faqs = [
+const fallbackFaqs = [
   {
     q: 'How do I place an order?',
     a: 'Browse our collection, select your size and color, and click "Add to Cart". When you\'re ready, head to checkout, fill in your shipping details, and complete payment. You\'ll receive an order confirmation email right away.',
@@ -47,7 +48,11 @@ const faqs = [
 ];
 
 export default function FAQsPage() {
+  const { faqs: adminFaqs, settings, isLoaded } = useAdmin();
   const [openIdx, setOpenIdx] = useState(null);
+  const faqs = isLoaded && adminFaqs.length > 0
+    ? adminFaqs.filter((f) => f.active !== false)
+    : fallbackFaqs.filter((f) => f.active !== false);
 
   return (
     <PageLayout title="Frequently Asked Questions" breadcrumb="FAQs">
@@ -113,7 +118,7 @@ export default function FAQsPage() {
           Our support team is here to help you with anything you need.
         </p>
         <a
-          href="mailto:support@verre.com"
+          href={`mailto:${settings?.supportEmail || 'support@verre.com'}`}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all hover:scale-105"
           style={{ backgroundColor: 'var(--accent-lime)', color: '#000' }}
         >

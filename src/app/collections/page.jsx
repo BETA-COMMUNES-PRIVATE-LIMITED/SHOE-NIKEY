@@ -4,83 +4,45 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
-
-const collections = [
-  {
-    title: 'Summer Essentials',
-    desc: 'Lightweight picks for warm days. Breathable, comfortable, and ready for anything.',
-    image: '/images/s1.png',
-    color: '#FFD700',
-    items: [
-      { name: 'Nike Calm 2.0', price: 65, image: '/images/s1.png', section: 'men', id: 8 },
-      { name: 'Nike Victori One', price: 55, image: '/images/ssss1.png', section: 'men', id: 9 },
-      { name: 'Jordan Franchies', price: 110, image: '/images/sss1.png', section: 'men', id: 10 },
-      { name: 'Nike Calm Slide', price: 50, image: '/images/sssss1.png', section: 'men', id: 11 },
-    ],
-  },
-  {
-    title: 'Built for the Court',
-    desc: 'Performance basketball shoes engineered for speed, support, and style on the hardwood.',
-    image: '/images/basketball.png',
-    color: '#ef4444',
-    items: [
-      { name: 'Nike Air Max Pulse', price: 180, image: '/images/c33.png', section: 'men', id: 12 },
-      { name: 'Jordan 13 Retro Kids', price: 110, image: '/images/pic6 kid.png', section: 'kids', id: 6 },
-      { name: 'Tatum 44 Kids', price: 95, image: '/images/pic15 kid.png', section: 'kids', id: 4 },
-      { name: 'Jordan 6 Rings Kids', price: 120, image: '/images/pic8 kid.png', section: 'kids', id: 8 },
-    ],
-  },
-  {
-    title: 'Running Essentials',
-    desc: 'Cushioned, responsive, and lightweight. Made for daily runs and long miles.',
-    image: '/images/running.png',
-    color: '#818cf8',
-    items: [
-      { name: 'Nike 24.7', price: 120, image: '/images/tt1.png', section: 'men', id: 2 },
-      { name: "A'Two", price: 160, image: '/images/b1.png', section: 'men', id: 3 },
-      { name: 'Nike Air Griffey Max 1', price: 100, image: '/images/pic7 kid.png', section: 'kids', id: 7 },
-      { name: 'Nike Flex', price: 55, image: '/images/pic9 kid.png', section: 'kids', id: 9 },
-    ],
-  },
-  {
-    title: 'Women\'s Favorites',
-    desc: 'Top-rated picks loved by our community. Style meets performance.',
-    image: '/images/women1-1 bb.png',
-    color: '#f472b6',
-    items: [
-      { name: 'Sabrina 4 "Light Work"', price: 130, image: '/images/women1-1 bb.png', section: 'women', id: 1 },
-      { name: 'Luka 5 "Venom"', price: 115, image: '/images/women 2-1 bb.png', section: 'women', id: 2 },
-      { name: 'Book 1 "Scorpion"', price: 130, image: '/images/women 31 bb.png', section: 'women', id: 3 },
-      { name: 'Nike Air Rift', price: 130, image: '/images/li-1.png', section: 'women', id: 10 },
-    ],
-  },
-  {
-    title: 'Kids\' Top Picks',
-    desc: 'Durable, fun, and built for play. The best kicks for the next generation.',
-    image: '/images/pic2 kid.png',
-    color: '#22c55e',
-    items: [
-      { name: 'Air Jordan 3 Retro', price: 155, image: '/images/pic1 kid.png', section: 'kids', id: 1 },
-      { name: 'Nike Dunk Low Kids', price: 85, image: '/images/pic2 kid.png', section: 'kids', id: 2 },
-      { name: 'Nike Giannis Immortality 4', price: 75, image: '/images/pic13 kid.png', section: 'kids', id: 5 },
-      { name: 'Nike Star', price: 55, image: '/images/pic14 kid.png', section: 'kids', id: 13 },
-    ],
-  },
-  {
-    title: 'Lifestyle Icons',
-    desc: 'Classic silhouettes reimagined. From street to studio, these never go out of style.',
-    image: '/images/lifestyle-1.png',
-    color: '#FFD700',
-    items: [
-      { name: "Nike Air Force 1 '07 LV8", price: 110, image: '/images/p4-1.png', section: 'men', id: 5 },
-      { name: 'Nike Waffle Racer', price: 150, image: '/images/product3(c-1).png', section: 'men', id: 4 },
-      { name: 'Nike Court Heritage', price: 100, image: '/images/ll1.png', section: 'women', id: 12 },
-      { name: 'Nike Shox Z', price: 110, image: '/images/lif-1.png', section: 'women', id: 11 },
-    ],
-  },
-];
+import { useAdmin } from '@/context/AdminContext';
+import menProducts from '@/data/menProducts';
+import womenProducts from '@/data/womenProducts';
+import kidsProducts from '@/data/kidsProducts';
 
 export default function CollectionsPage() {
+  const { collections, customProducts, applyProductOverrides, hiddenProducts, isLoaded, pageContent } = useAdmin();
+
+  // Admin-editable page intro (Admin → Collections → Page Intro)
+  const intro = pageContent['collections-header']?.intro || 'Curated groups of shoes for every occasion, season, and style. Find the perfect pair.';
+
+  // Build a full product index from every section catalog, then layer
+  // admin custom products + overrides on top. Keyed by `${section}-${id}`
+  // because ids repeat across catalogs (each section starts at id 1).
+  const productIndex = {};
+  const addAll = (section, list) => {
+    // applyProductOverrides layers admin edits (name/price/image/images) on top
+    // of the built-in catalog, so collection tiles reflect admin changes.
+    (applyProductOverrides(list) || []).forEach((p) => {
+      productIndex[`${section}-${p.id}`] = {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        image: p.images?.[0] || p.image,
+        section,
+      };
+    });
+  };
+  addAll('men', menProducts);
+  addAll('women', womenProducts);
+  addAll('kids', kidsProducts);
+  customProducts.forEach((p) => {
+    productIndex[`${p.section}-${p.id}`] = { name: p.name, price: p.price, image: p.images?.[0] || p.image, section: p.section };
+  });
+  const isHidden = (key) => (hiddenProducts || []).includes(key);
+
+  const visible = (isLoaded ? collections : collections.filter((c) => c.active !== false))
+    .filter((c) => c.active !== false);
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <Navbar />
@@ -92,58 +54,92 @@ export default function CollectionsPage() {
             Collections
           </h1>
           <p className="text-sm max-w-lg" style={{ color: 'var(--text-muted)' }}>
-            Curated groups of shoes for every occasion, season, and style. Find the perfect pair.
+            {intro}
           </p>
         </div>
 
         {/* Collections */}
         <div className="flex flex-col gap-8">
-          {collections.map((col, idx) => (
-            <div key={col.title}>
-              {/* Collection Header */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: col.color }} />
-                <h2 className="text-sm font-bold tracking-wider uppercase" style={{ color: 'var(--text-primary)' }}>
-                  {col.title}
-                </h2>
-                <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-                  {col.items.length} items
-                </span>
-              </div>
+          {visible.map((col) => {
+            // Resolve linked products — supports both plain ids (legacy)
+            // and section-scoped keys like "men-8". Deduped in case old
+            // saved data contains both forms of the same product.
+            const seen = new Set();
+            const items = (col.productIds || [])
+              .map((id) => {
+                if (typeof id === 'string' && productIndex[id]) return productIndex[id];
+                const sec = col.section || 'men';
+                return productIndex[`${sec}-${id}`];
+              })
+              .filter(Boolean)
+              .filter((item) => {
+                const key = `${item.section}-${item.id}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              })
+              .filter((item) => !isHidden(`${item.section}-${item.id}`));
 
-              {/* Featured Card */}
-              <div className="rounded-2xl overflow-hidden mb-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                <div className="grid grid-cols-1 md:grid-cols-5">
-                  {/* Large Image */}
-                  <div className="relative md:col-span-2 aspect-square md:aspect-auto" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                    <Image src={col.image} alt={col.title} fill className="object-contain p-8" />
-                    <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 30% 50%, ${col.color}, transparent 60%)` }} />
-                  </div>
+            return (
+              <div key={col.id}>
+                {/* Collection Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: col.color }} />
+                  <h2 className="text-sm font-bold tracking-wider uppercase" style={{ color: 'var(--text-primary)' }}>
+                    {col.title}
+                  </h2>
+                  <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
+                    {items.length} items
+                  </span>
+                </div>
 
-                  {/* Items Preview */}
-                  <div className="md:col-span-3 p-5">
-                    <p className="text-xs mb-4 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{col.desc}</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {col.items.map((item) => (
-                        <Link
-                          key={`${item.section}-${item.id}`}
-                          href={`/${item.section}/${item.id}`}
-                          className="group rounded-xl p-2 transition-all hover:bg-white/[0.03]"
-                          style={{ border: '1px solid var(--border-color)' }}
-                        >
-                          <div className="relative aspect-square mb-2" style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem' }}>
-                            <Image src={item.image} alt={item.name} fill className="object-contain p-2" />
-                          </div>
-                          <p className="text-[10px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>{item.name}</p>
-                          <p className="text-[10px] font-bold" style={{ color: col.color }}>${item.price}</p>
-                        </Link>
-                      ))}
+                {/* Featured Card */}
+                <div className="rounded-2xl overflow-hidden mb-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <div className="grid grid-cols-1 md:grid-cols-5">
+                    {/* Large Image */}
+                    <div className="relative md:col-span-2 aspect-square md:aspect-auto" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                      <Image src={col.image} alt={col.title} fill className="object-contain p-8" />
+                      <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 30% 50%, ${col.color}, transparent 60%)` }} />
+                    </div>
+
+                    {/* Items Preview */}
+                    <div className="md:col-span-3 p-5">
+                      <p className="text-xs mb-4 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{col.desc}</p>
+                      {items.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {items.map((item) => (
+                            <Link
+                              key={`${col.id}-${item.section}-${item.id}`}
+                              href={`/${item.section}/${item.id}`}
+                              className="group rounded-xl p-2 transition-all hover:bg-white/[0.03]"
+                              style={{ border: '1px solid var(--border-color)' }}
+                            >
+                              <div className="relative aspect-square mb-2" style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem' }}>
+                                <Image src={item.image} alt={item.name} fill className="object-contain p-2" />
+                              </div>
+                              <p className="text-[10px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>{item.name}</p>
+                              <p className="text-[10px] font-bold" style={{ color: col.color }}>${item.price}</p>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-xl p-6 text-center" style={{ border: '1px dashed var(--border-color)' }}>
+                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No products linked to this collection yet.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
+            );
+          })}
+
+          {visible.length === 0 && (
+            <div className="text-center py-20 rounded-2xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>No collections yet</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Check back soon for curated drops.</p>
             </div>
-          ))}
+          )}
         </div>
       </main>
 

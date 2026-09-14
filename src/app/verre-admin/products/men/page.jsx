@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAdmin } from '@/context/AdminContext';
 import productsDataMen from '@/data/menProducts';
@@ -9,7 +9,7 @@ import ProductForm from '@/components/admin/ProductForm';
 const categories = ['All', 'Lifestyle', 'Running', 'Basketball', 'Training', 'Slides'];
 
 export default function AdminMenProductsPage() {
-  const { customProducts, addProduct, updateProduct, deleteProduct } = useAdmin();
+  const { customProducts, addProduct, updateProduct, deleteProduct, applyProductOverrides } = useAdmin();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -17,7 +17,20 @@ export default function AdminMenProductsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // grid or list
 
-  const builtIn = productsDataMen.map((p) => ({ ...p, section: 'men', isBuiltIn: true }));
+  // Deep-link: /verre-admin/products/men?edit=ID opens the editor for that product
+  useEffect(() => {
+    const id = Number(new URLSearchParams(window.location.search).get('edit'));
+    if (!id) return;
+    const all = [...applyProductOverrides(productsDataMen.map((p) => ({ ...p, section: 'men', isBuiltIn: true }))), ...customProducts.filter((p) => p.section === 'men')];
+    const target = all.find((p) => p.id === id);
+    if (target) {
+      setEditingProduct(target);
+      setShowForm(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const builtIn = applyProductOverrides(productsDataMen.map((p) => ({ ...p, section: 'men', isBuiltIn: true })));
   const custom = customProducts
     .filter((p) => p.section === 'men')
     .map((p) => ({ ...p, isBuiltIn: false }));

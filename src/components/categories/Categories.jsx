@@ -3,18 +3,24 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAdmin } from '@/context/AdminContext';
+
+const fallbackCategories = [
+  { id: 1, name: 'Running', image: '/images/running.png', section: 'men', active: true },
+  { id: 2, name: 'Lifestyle', image: '/images/lifestyle-1.png', section: 'men', active: true },
+  { id: 3, name: 'Basketball', image: '/images/basketball.png', section: 'men', active: true },
+  { id: 4, name: 'Nike 24.7', image: '/images/tt1.png', section: 'women', active: true },
+  { id: 5, name: 'Nike Metcon 9', image: '/images/training.png', section: 'men', active: true },
+  { id: 6, name: 'Nike Court Heritage', image: '/images/ll1.png', section: 'women', active: true },
+  { id: 7, name: 'Nike Air Rift', image: '/images/li-1.png', section: 'women', active: true },
+  { id: 8, name: 'Nike Shox Z', image: '/images/lif-1.png', section: 'women', active: true },
+];
 
 const Categories = () => {
-  const categories = [
-    { name: 'Running', image: '/images/running.png', section: 'men' },
-    { name: 'Lifestyle', image: '/images/lifestyle-1.png', section: 'men' },
-    { name: 'Basketball', image: '/images/basketball.png', section: 'men' },
-    { name: 'Nike 24.7', image: '/images/tt1.png', section: 'women' },
-    { name: 'Nike Metcon 9', image: '/images/training.png', section: 'men' },
-    { name: 'Nike Court Heritage', image: '/images/ll1.png', section: 'women' },
-    { name: 'Nike Air Rift', image: '/images/li-1.png', section: 'women' },
-    { name: 'Nike Shox Z', image: '/images/lif-1.png', section: 'women' },
-  ];
+  const { categories: adminCategories, isLoaded } = useAdmin();
+  const categories = isLoaded && adminCategories.length > 0
+    ? adminCategories.filter((c) => c.active !== false)
+    : fallbackCategories;
 
   return (
     <section className="w-full py-6">
@@ -27,7 +33,7 @@ const Categories = () => {
         </a>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-8 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
         {categories.map((cat, idx) => (
           <Link
             key={idx}
