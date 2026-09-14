@@ -54,7 +54,7 @@ function ApplicationForm({ job, careersEmail, onDone }) {
         <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'rgba(34,197,94,0.12)' }}>
           <svg className="w-7 h-7" fill="none" stroke="#22c55e" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
         </div>
-        <h3 className="text-sm font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>Application Sent! 🎉</h3>
+        <h3 className="text-sm font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>Application Sent!</h3>
         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
           Thanks {form.name.split(' ')[0]} — our team will review your resume and get back to you.
         </p>

@@ -353,7 +353,7 @@ export default function AdminLayout({ children }) {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
                   <div
-                    className="absolute right-0 top-12 w-80 rounded-2xl z-50 animate-dropdown overflow-hidden"
+                    className="fixed left-2 right-2 top-16 w-auto sm:absolute sm:left-auto sm:right-0 sm:top-12 sm:w-80 rounded-2xl z-50 animate-dropdown overflow-hidden"
                     style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)' }}
                   >
                     <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
@@ -375,7 +375,7 @@ export default function AdminLayout({ children }) {
                     <div className="max-h-80 overflow-y-auto scrollbar-hide">
                       {notifCount === 0 ? (
                         <p className="px-4 py-8 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                          You&apos;re all caught up! 🎉
+                          You&apos;re all caught up
                         </p>
                       ) : (
                         notifications.map((n) => {

@@ -275,12 +275,12 @@ export default function AdminDashboard() {
       {/* Middle: Homepage Banner + Sales Overview */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Homepage Banner */}
-        <div className="xl:col-span-2 rounded-2xl relative overflow-hidden p-6 md:p-8 flex items-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="xl:col-span-2 rounded-2xl relative overflow-hidden p-6 md:p-8 flex flex-col sm:flex-row sm:items-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div
             className="absolute inset-0"
             style={{ background: 'radial-gradient(ellipse at 75% 50%, rgba(166,255,0,0.12), transparent 60%)' }}
           />
-          <div className="relative z-10 flex flex-col gap-3 max-w-[60%]">
+          <div className="relative z-10 flex flex-col gap-3 w-full sm:max-w-[60%]">
             <h3 className="text-lg md:text-xl font-extrabold" style={{ color: 'var(--text-primary)' }}>Manage Your Homepage</h3>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Update banners, featured products and content.</p>
             <Link
@@ -291,13 +291,14 @@ export default function AdminDashboard() {
               Edit Homepage
             </Link>
           </div>
-          <div className="absolute inset-y-0 right-0 w-[50%] hidden sm:block pointer-events-none">
+          {/* Shoe + tagline — visible on mobile, tablet and laptop */}
+          <div className="relative z-10 h-32 w-full mt-4 sm:mt-0 sm:absolute sm:inset-y-0 sm:right-0 sm:w-[50%] sm:h-auto pointer-events-none">
             {/* Shoe — centered in the space left of the tagline */}
-            <div className="absolute inset-y-2 left-0 right-16">
+            <div className="absolute inset-y-0 left-0 right-16 sm:inset-y-2">
               <Image src="/images/shoe-dashboard.png" alt="Featured shoe" fill style={{ objectFit: 'contain', objectPosition: 'center' }} className="drop-shadow-2xl" />
             </div>
             {/* Tagline — pinned right, vertically centered */}
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-right text-xl md:text-2xl font-extrabold italic tracking-tighter leading-[0.95]" style={{ color: 'var(--text-primary)' }}>
+            <span className="absolute right-1 top-1/2 -translate-y-1/2 sm:right-4 text-right text-xl md:text-2xl font-extrabold italic tracking-tighter leading-[0.95]" style={{ color: 'var(--text-primary)' }}>
               JUST<br />DO IT.
             </span>
           </div>
@@ -391,7 +392,7 @@ export default function AdminDashboard() {
         <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Top Categories</h3>
-            <span className="text-[11px] font-semibold cursor-pointer" style={{ color: 'var(--text-muted)' }}>View All →</span>
+            <Link href="/verre-admin/categories" className="text-[11px] font-semibold transition-all hover:opacity-70" style={{ color: 'var(--text-muted)' }}>View All →</Link>
           </div>
           <div className="flex flex-col gap-3">
             {topCategories.map((c) => (

@@ -625,7 +625,7 @@ function JobsTab() {
                 <div className="min-w-0">
                   <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{a.name} <span className="font-normal" style={{ color: 'var(--text-muted)' }}>→ {a.role}</span></p>
                   <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{a.email} {a.phone && `· ${a.phone}`}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--accent-lime)' }}>📎 {a.fileName}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--accent-lime)' }}>{a.fileName}</p>
                   {a.coverNote && <p className="text-[10px] mt-1 line-clamp-2" style={{ color: 'var(--text-muted)' }}>&ldquo;{a.coverNote}&rdquo;</p>}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
@@ -689,7 +689,7 @@ function JobsTab() {
                   {j.open === false ? 'Closed' : 'Open'}
                 </span>
               </div>
-              <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{j.team} · {j.type} · {j.level} · 📍 {j.location}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{j.team} · {j.type} · {j.level} · {j.location}</p>
               <p className="text-[10px] mt-1 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{j.desc}</p>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
